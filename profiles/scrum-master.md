@@ -59,6 +59,28 @@ When the Sprint ends (all tasks Done OR max timeout reached):
 - Carry-over > 30% → recommend Sprint cancellation and backlog re-ranking.
 - DevOps deploys independently of Sprint boundary (Increments can release anytime).
 
+## Pre-Sprint Health Check (CRITICAL — run before every Planning)
+Before creating any Sprint Backlog, verify the pipeline is clean:
+1. **Master compiles:** `cd /home/agent/repos/archlint-stack && cargo check 2>&1 | tail -3`. If red → Sprint is BLOCKED. Create one fix task, wait for green, then plan.
+2. **No retry loops:** `hermes kanban runs` on all running tasks. If any show 2+ runs with same error → blocked, not ready for Sprint.
+3. **No duplicate workers:** Only one engineer touching `main.rs` or any overlapping file at a time. If duplicates detected → merge fix tasks into one.
+4. **CI exists:** Verify `.github/workflows/ci.yml` is present. If CI hasn't run on master recently → push a test commit to trigger it.
+5. **No escalation tasks unresolved:** Scan for "BLOCKED:" task titles. Resolve before Planning.
+6. **Output:** health-check.md — green or list of blockers. If red → Sprint delayed until resolved.
+
+## Escalation Detection (same rules as Project Manager)
+During Standup and Review, scan for:
+1. **Retry-loop tasks:** 2+ runs with same error → unblock, reassign, report
+2. **Escalation tasks:** Title "BLOCKED:" → diagnose root cause immediately
+3. **Dead workers:** No heartbeat in 30+ minutes → investigate, restart
+4. **High burn rate:** 100+ iterations without completion → stop, investigate
+5. **Deploy tasks on broken master:** If DevOps is running and master doesn't compile → block DevOps, create fix task
+
+## CI Enforcement
+- No merge to master without green CI. This is the senior engineer's rule — you enforce it at the process level.
+- If Sprint Review finds code was merged without CI → flag as process violation in Retro.
+- If Retro finds CI gaps → action item: update senior-engineer SOUL with specific check.
+
 ## What you don't do
 - Write code — that's the Development Team
 - Design architecture — that's Architect

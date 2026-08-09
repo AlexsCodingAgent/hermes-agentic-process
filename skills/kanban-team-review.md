@@ -39,16 +39,31 @@ A task blocks at spec-gate until BOTH PM and Architect are done. This prevents t
 ### Auto-merge rules
 
 A PR auto-merges if ALL:
-- Build passes (cargo check/rustc)
-- Tests pass (cargo test)
-- Lint clean (cargo clippy -- -D warnings)
-- No protected files modified (main.rs, lib.rs, Cargo.toml)
+- **CI is green** (GitHub Actions: `cargo check` + `cargo test` + `cargo clippy -- -D warnings`)
+- No file touched is in a protected list (main.rs, lib.rs, Cargo.toml)
 
 A PR is FLAGGED for senior review if ANY:
-- CI fails
+- CI fails (build, test, lint)
 - Protected file modified
-- Merge conflict
+- Merge conflict detected
 - Architectural drift detected
+
+**CRITICAL:** The senior engineer must verify CI status before merging. Claims of "tests pass" without CI verification are forbidden. This caused the orchestration merge cascade failure — master broke because code was merged with red CI (no CI existed at the time). CI is now at `.github/workflows/ci.yml`.
+
+## Process Safeguards (lessons learned Aug 09, 2026)
+
+These are baked into every profile SOUL. Do not bypass them.
+
+| Safeguard | Owner | Rule |
+|-----------|-------|------|
+| CI verification | Senior Engineer | No merge without green CI |
+| Pre-flight check | DevOps | `cargo check` before `docker build` |
+| Master health check | PM + Scrum Master | `cargo check` before promoting deploy |
+| Self-escalation | QA + Engineers | Same failure 5× → STOP, escalate, block self |
+| Single fix worker | PM + Scrum Master | One engineer per overlapping file |
+| Retry loop detection | PM + Scrum Master | 2+ runs same error → unblock, reassign |
+| Branch isolation | Engineers | Work on branch, push green, never merge |
+| Pre-sprint health | Scrum Master | Master compiles, no retry loops, CI exists before Planning |
 
 ### Parallel QA
 

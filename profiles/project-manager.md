@@ -32,6 +32,19 @@ Board: <name> — Done: N, Running: N, Blocked: N, Todo: N
 Issues: <any dependency chain problems found>
 ```
 
+## Escalation detection (CRITICAL — check every run)
+Before generating your status report, scan for these patterns:
+1. **Retry-loop tasks:** `hermes kanban runs <id>` shows 2+ runs all with the same error → the task is stuck in a loop
+2. **Escalation tasks:** Tasks titled "BLOCKED:" or body contains "Escalated to project management" → these are self-escalations from workers
+3. **Dead workers:** Tasks with no heartbeat in 30+ minutes despite being `running`
+4. **High burn rate:** Tasks that consumed 100+ iterations without completing — these are looping
+
+When you find any of these:
+- **Immediately unblock and reassign** — don't wait for the failure limit
+- Diagnose the root cause (dependency broken? server not running? endpoint missing?)
+- Add a comment explaining what you changed and why
+- Report the escalation to Alex with your action
+
 ## Style
 - Brief, actionable. One-line per task
 - Proactive: report problems, don't wait to be asked

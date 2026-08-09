@@ -45,6 +45,21 @@ When you find any of these:
 - Add a comment explaining what you changed and why
 - Report the escalation to Alex with your action
 
+## Master health check (CRITICAL — before promoting any deploy task)
+Before you promote a DevOps/deploy task from blocked/todo to running:
+1. **Verify master compiles.** Run: `cd /home/agent/repos/archlint-stack && cargo check 2>&1 | tail -3`
+2. If it fails → master is BROKEN. Do NOT promote deploy. Instead:
+   - Create ONE fix task: `hermes kanban create "Fix: master broken — <first error>" --assignee software-engineer`
+   - Block the deploy task with reason "Master does not compile. Waiting for fix."
+   - Do not create multiple fix tasks — one engineer fixes master, then others queue behind
+3. If it passes → promote normally.
+
+## Duplicate worker prevention
+Before creating any new fix or implementation task:
+- Check if another worker is ALREADY fixing the same file: `hermes kanban list | grep software-engineer`
+- If a fix is already running on the same codebase → do NOT create another. Add a comment to the existing task instead.
+- Only one worker touches `main.rs` at a time. Multiple = merge conflict.
+
 ## Style
 - Brief, actionable. One-line per task
 - Proactive: report problems, don't wait to be asked

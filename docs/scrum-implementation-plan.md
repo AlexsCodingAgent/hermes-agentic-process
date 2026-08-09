@@ -330,3 +330,86 @@ Operational (Kanban)              Feature work (Scrum)
 | 8 | Retro → adjust → iterate | Ongoing |
 
 **Total setup: ~4 hours. First sprint: 24 hours. Feedback loop: immediately.**
+
+---
+
+## 11. Research-Backed Refinements
+
+Findings from the Scrum research subagent (sourced from Scrum Guide 2020, current pipeline skills, and AI agent orchestration patterns) that refine the plan above.
+
+### Start with Scrumban, Not Full Scrum
+
+Full Scrum locks the Sprint Backlog during the sprint. AI agents have unpredictable completion times — a task might take 2 minutes or 45 minutes. A locked backlog causes either idle workers (scope too small) or carry-over chaos (scope too large).
+
+**Scrumban** = Scrum cadence + Kanban flexibility:
+- Fixed sprint cycle with a Sprint Goal (Scrum)
+- **No Sprint Backlog lock** — pull from top of backlog when ready (Kanban)
+- Ceremonies as cron jobs
+- WIP limits per column + per-sprint capacity cap
+
+This is where to start. Graduate to full Scrum only if velocity stabilizes.
+
+### Work-Complete Sprints with Max Timeout
+
+Instead of "Sprint ends at 09:00 regardless":
+- Sprint **ends when all committed items are Done**
+- Max timeout prevents stalls (e.g., "Sprint times out after 36 hours")
+- Unfinished items return to Product Backlog
+- Carry-over budget: max 30% of Sprint capacity
+
+This is a hybrid: Kanban's continuous flow within a Scrum-like goal container.
+
+### Sprint Labels, Not Sprint Boards
+
+Keep the existing per-workstream boards. Add `--label sprint-N` to tasks during planning. View sprint-N items with `hermes kanban list --label sprint-14`. This is less disruptive than creating/destroying boards per sprint and keeps workstream context intact.
+
+Board migration path:
+```
+Phase 1: Labels on existing boards (zero migration)
+Phase 2: If cross-workstream visibility becomes a problem → single sprint-board
+```
+
+### Overflow Queue
+
+When an agent's Sprint Backlog is empty (all items blocked or done):
+- Pull from a tagged overflow queue of next-sprint backlog items
+- Tag: `overflow-ok` on Product Backlog items that can be started early
+- Prevents idle workers during sprint bottleneck periods
+
+### DevOps Remains Independent of Sprint Boundary
+
+Scrum says Increments can be released anytime — Sprint Review is an inspection point, not a release gate. Keep the existing auto-merge + deploy flow. DevOps deploys when ready, not when the sprint ends.
+
+### Carry-Over Planning
+
+AI agents won't hit Sprint boundaries cleanly. Budget 20-30% carry-over:
+- At Planning, select items at 0.7-0.8× expected capacity
+- Items not Done by timeout → Product Backlog (not auto-failed)
+- Track carry-over rate in Retrospective — if consistently >30%, reduce Sprint capacity
+
+### Retrospective as Prompt Improvement
+
+The Retrospective output must feed back into the system:
+- Metrics: velocity, cycle time, failure rate, rework rate
+- If a profile consistently fails tasks → adjust its SOUL.md
+- If a model underperforms → Retro recommends model change
+- Action items become Kanban tasks on the `default` board for process improvement
+
+This closes the Inspect & Adapt loop.
+
+---
+
+## 12. Revised Implementation Path
+
+| Phase | What | Effort |
+|-------|------|--------|
+| 1 | Create `scrum-master` profile + SOUL | 30 min |
+| 2 | Add Sprint Goal + labels to existing Kanban (Scrumban) | 30 min |
+| 3 | Implement sprint planning cron (algorithmic, not negotiated) | 1 hour |
+| 4 | Implement 6-hourly status cron (async standup) | 45 min |
+| 5 | Implement review + retro crons (metric-driven) | 1 hour |
+| 6 | Migrate existing backlog items to Product Backlog board | 30 min |
+| 7 | Run 3 Scruban sprints → decide: keep Scrumban or go full Scrum | 3 days |
+
+**Key pivot from original plan:** Start with labels on existing boards (not new boards). Start with flexible Sprint Backlog (not locked). Let the data decide whether to formalize further.
+
